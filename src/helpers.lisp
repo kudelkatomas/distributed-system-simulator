@@ -26,7 +26,7 @@
         (t (cons (car list)
                  (replace-element (cdr list) el new-el :key key)))))
 
-; Source: https://lispcookbook.github.io/cl-cookbook/process.html
+;; Source: https://lispcookbook.github.io/cl-cookbook/process.html
 (defmacro until (condition &body body)
   "Loops around until the condition becomes true."
   (let ((block-name (gensym)))

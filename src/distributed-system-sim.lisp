@@ -60,7 +60,7 @@
    (clock :initform 0
           :reader clock)))
 
-; Not local
+;; Not local
 (defmethod start ((nd node))
   (bt:with-lock-held ((slot-value nd 'running-p-lock))
     (unless (running-p nd)
@@ -82,7 +82,7 @@
 ;;; Message queue
 ;;;
 
-; Not local
+;; Not local
 (defmethod enqueue-message ((nd node) (msg message))
   (bt:with-lock-held ((slot-value nd 'running-p-lock))
     (when (running-p nd)
@@ -91,13 +91,13 @@
               (append (slot-value nd 'message-queue)
                       (list msg)))))))
 
-; Local
+;; Local
 (defmethod dequeue-message ((nd node))
   (bt:with-lock-held ((slot-value nd 'message-queue-lock))
     (when (slot-value nd 'message-queue)
       (pop (slot-value nd 'message-queue)))))
 
-; Local
+;; Local
 (defmethod process-next-message ((nd node))
   (let ((msg (dequeue-message nd)))
     (when msg
@@ -121,13 +121,13 @@
 (defgeneric handle-message (node message-type msg)
   (:documentation "Handle MSG directed to NODE based on its MESSAGE-TYPE."))
 
-; Local
+;; Local
 (defmethod handle-message ((nd node) (type (eql :connection-request)) msg)
   (let ((requester-id (sender-id msg)))
     (connect nd requester-id)
     (send-message-as nd requester-id ":introduction")))
 
-; Local
+;; Local
 (defmethod handle-message ((nd node) (type (eql :introduction)) msg)
   (connect nd (sender-id msg)))
 
@@ -135,11 +135,11 @@
 ;;; Helper methods
 ;;;
 
-; Local
+;; Local
 (defmethod connect ((nd node) sender-id)
   (pushnew sender-id (slot-value nd 'known-node-ids)))
 
-; Local
+;; Local
 (defmethod send-message-as ((nd node) receiver-id content)
   (send-message (network nd)
                 (make-instance 'message
