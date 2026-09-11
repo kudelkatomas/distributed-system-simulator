@@ -10,6 +10,7 @@
 (require "asdf")
 (asdf:load-system :bordeaux-threads)
 
+;; Broadcast: (= receiver-id *broadcast*)
 (defparameter *broadcast* 0)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -108,18 +109,13 @@
 ;;;
 ;;; Message handling
 ;;;
-;;; Message types:
-;;;   :connection-request |
-;;;   :introduction |
-;;;   :resource-request |
-;;;   :resource-request-ack |
-;;;   :resource-release
+;;; Message types: :connection-request, :introduction
 ;;;
 ;;; Broadcast: (= receiver-id *broadcast*)
 ;;;
 
 (defgeneric handle-message (node message-type msg)
-  (:documentation "Handle MSG directed to NODE based on its MESSAGE-TYPE."))
+  (:documentation "Handle MSG received by NODE based on its MESSAGE-TYPE."))
 
 ;; Local
 (defmethod handle-message ((nd node) (type (eql :connection-request)) msg)
