@@ -49,15 +49,18 @@
    (running-p :initform nil
               :reader running-p)
    (running-p-lock :initform (bt:make-lock))
-   (message-queue :initform nil)
+   (message-queue :initform nil
+                  :reader message-queue)
    (message-queue-lock :initform (bt:make-lock))
    (program :initarg :program
             :initform (error "Node must have a program."))
-   (thread :initform nil)
+   (thread :initform nil
+           :reader thread)
    (network :initarg :network
             :initform (error "Node must be connected to some network.")
             :reader network)
-   (known-node-ids :initform nil)
+   (known-node-ids :initform nil
+                   :reader known-node-ids)
    (clock :initform 0
           :reader clock)))
 
