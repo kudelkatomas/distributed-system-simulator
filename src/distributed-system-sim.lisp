@@ -82,6 +82,10 @@
                      (setf (slot-value nd 'running-p) nil))))
                :name (format nil "node-~a" (id nd))))))))
 
+;; Local
+(defmethod increment-clock ((nd node))
+  (incf (slot-value nd 'clock)))
+
 ;;;
 ;;; Message queue
 ;;;
@@ -140,6 +144,7 @@
 
 ;; Local
 (defmethod send-message-as ((nd node) receiver-id content)
+  (increment-clock nd)
   (send-message (network nd)
                 (make-instance 'message
                                :sender-id (id nd)
