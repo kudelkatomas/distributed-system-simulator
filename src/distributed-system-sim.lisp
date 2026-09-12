@@ -4,7 +4,10 @@
 ;;;; Author: Tomáš Kudělka
 ;;;;
 ;;;; Description:
-;;;;   Definitions of base classes: Message, Node, Network
+;;;;   Base classes (Message, Node, Network)
+;;;;
+;;;;   Partial ordering of system events is established using
+;;;;   Lamport's system of logical clocks: https://doi.org/10.1145/359545.359563
 ;;;;
 
 (require "asdf")
@@ -82,9 +85,18 @@
                      (setf (slot-value nd 'running-p) nil))))
                :name (format nil "node-~a" (id nd))))))))
 
+;;;
+;;; Lamport's logical clock
+;;;
+
 ;; Local
 (defmethod increment-clock ((nd node))
   (incf (slot-value nd 'clock)))
+
+;; Local
+(defmethod update-clock ((nd node) timestamp)
+  (setf (slot-value nd 'clock)
+        (1+ (max (clock nd) timestamp))))
 
 ;;;
 ;;; Message queue
@@ -125,13 +137,17 @@
   (:documentation "Handle MSG received by NODE based on its MESSAGE-TYPE."))
 
 ;; Local
-(defmethod handle-message ((nd node) (type (eql :connection-request)) msg)
+(defmethod handle-message :before ((nd node) message-type (msg message))
+  (update-clock nd (timestamp msg)))
+
+;; Local
+(defmethod handle-message ((nd node) (type (eql :connection-request)) (msg message))
   (let ((requester-id (sender-id msg)))
     (connect nd requester-id)
     (send-message-as nd requester-id ":introduction")))
 
 ;; Local
-(defmethod handle-message ((nd node) (type (eql :introduction)) msg)
+(defmethod handle-message ((nd node) (type (eql :introduction)) (msg message))
   (connect nd (sender-id msg)))
 
 ;;;
