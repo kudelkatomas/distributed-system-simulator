@@ -133,21 +133,21 @@
 ;;; Broadcast: (= receiver-id *broadcast*)
 ;;;
 
-(defgeneric handle-message (node message-type msg)
+(defgeneric handle-message (node msg-type msg)
   (:documentation "Handle MSG received by NODE based on its MESSAGE-TYPE."))
 
 ;; Local
-(defmethod handle-message :before ((nd node) message-type (msg message))
+(defmethod handle-message :before ((nd node) msg-type (msg message))
   (update-clock nd (timestamp msg)))
 
 ;; Local
-(defmethod handle-message ((nd node) (type (eql :connection-request)) (msg message))
+(defmethod handle-message ((nd node) (msg-type (eql :connection-request)) (msg message))
   (let ((requester-id (sender-id msg)))
     (connect nd requester-id)
     (send-message-as nd requester-id ":introduction")))
 
 ;; Local
-(defmethod handle-message ((nd node) (type (eql :introduction)) (msg message))
+(defmethod handle-message ((nd node) (msg-type (eql :introduction)) (msg message))
   (connect nd (sender-id msg)))
 
 ;;;
