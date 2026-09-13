@@ -138,17 +138,12 @@
 
 ;; Local
 (defmethod handle-message :before ((nd node) msg-type (msg message))
+  (connect nd (sender-id msg))
   (update-clock nd (timestamp msg)))
 
 ;; Local
 (defmethod handle-message ((nd node) (msg-type (eql :connection-request)) (msg message))
-  (let ((requester-id (sender-id msg)))
-    (connect nd requester-id)
-    (send-message-as nd requester-id ":introduction")))
-
-;; Local
-(defmethod handle-message ((nd node) (msg-type (eql :introduction)) (msg message))
-  (connect nd (sender-id msg)))
+  (send-message-as nd (sender-id msg) ":introduction"))
 
 ;;;
 ;;; Helper methods
