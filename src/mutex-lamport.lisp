@@ -103,10 +103,6 @@
 ;;; New message types: :resource-request, :resource-request-ack, :resource-release
 ;;;
 
-;;;
-;;; To be completed
-;;;
-
 ;; Local
 (defmethod handle-message :after ((nd lamport-node) msg-type (msg message))
   (update-known-node-clocks nd (sender-id msg) (timestamp msg)))
