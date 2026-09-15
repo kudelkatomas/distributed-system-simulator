@@ -10,9 +10,6 @@
 ;;;;   Lamport's system of logical clocks: https://doi.org/10.1145/359545.359563
 ;;;;
 
-(require "asdf")
-(asdf:load-system :bordeaux-threads)
-
 ;; Broadcast: (= receiver-id *broadcast*)
 (defparameter *broadcast* 0)
 
