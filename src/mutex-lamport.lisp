@@ -4,7 +4,7 @@
 ;;;; Author: Tomáš Kudělka
 ;;;;
 ;;;; Description:
-;;;;   Mutual exlusion using Lamport's system of logical clocks
+;;;;   Shared resource access mutual exlusion using Lamport's system of logical clocks
 ;;;;   Lamport's paper: https://doi.org/10.1145/359545.359563
 ;;;;
 
@@ -22,29 +22,29 @@
                       :accessor request-timestamp)
    (request-queue :initform nil
                   :accessor request-queue)
-   (known-node-ids-clocks :initform nil
-                          :reader known-node-ids-clocks
-                          :documentation "List of pairs (id . id's clock value)")))
+   (known-node-clocks :initform nil
+                      :reader known-node-clocks
+                      :documentation "List of pairs (id . id's clock value)")))
 
 ;;;
 ;;; Resource
 ;;;
 
 ;; Local
-(defmethod request-resource ((nd node))
+(defmethod request-resource ((nd lamport-node))
   (setf (resource-state nd) :requested)
   (send-message-as nd *broadcast* ":resource-request")
   (setf (request-timestamp nd) (clock nd))
   (enqueue-request nd (id nd) (clock nd)))
 
 ;; Local
-(defmethod release-resource ((nd node))
+(defmethod release-resource ((nd lamport-node))
   (setf (resource-state nd) :released)
   (request-queue-remove nd (id nd))
   (send-message-as nd *broadcast* ":resource-release"))
 
 ;; Local
-(defmethod holds-resource-p ((nd node))
+(defmethod holds-resource-p ((nd lamport-node))
   (or (eql (resource-state nd) :granted)
       (and (= (id nd)                    ; 5.(i) from Lamport's paper
               (car (request-queue-head nd)))
@@ -53,7 +53,7 @@
            (setf (resource-state nd) :granted))))
 
 ;; Local
-(defmethod oldest-latest-received-message-timestamp ((nd node))
+(defmethod oldest-latest-received-message-timestamp ((nd lamport-node))
   (reduce #'min (slot-value nd 'node-ids) :key #'cdr))
 
 ;;;
@@ -61,11 +61,11 @@
 ;;;
 
 ;; Local
-(defmethod enqueue-request ((nd node) requester-id timestamp)
+(defmethod enqueue-request ((nd lamport-node) requester-id timestamp)
   (push (cons requester-id timestamp) (request-queue nd)))
 
 ;; Local
-(defmethod request-queue-head ((nd node))
+(defmethod request-queue-head ((nd lamport-node))
   (reduce (lambda (min-pair pair)
             (cond ((< (cdr pair) (cdr min-pair)) pair)
                   ((and (= (cdr pair) (cdr min-pair))
@@ -74,27 +74,27 @@
           (request-queue nd)))
 
 ;; Local
-(defmethod request-queue-remove ((nd node) releaser-id)
+(defmethod request-queue-remove ((nd lamport-node) releaser-id)
   (setf (request-queue nd)
         (remove-if (lambda (node-id) (eql node-id releaser-id))
                    (request-queue nd)
                    :key #'car)))
 
 ;;;
-;;; Known node ids clocks
+;;; Known nodes clocks
 ;;;
 
 ;; Local
-(defmethod update-known-node-ids-clocks ((nd node) sender-id timestamp)
-  (let ((pair (find sender-id (known-node-ids-clocks nd) :key #'car)))
+(defmethod update-known-node-clocks ((nd lamport-node) sender-id timestamp)
+  (let ((pair (find sender-id (known-node-clocks nd) :key #'car)))
     (cond ((and pair (> timestamp (cdr pair)))
-           (setf (slot-value nd 'known-node-ids-clocks)
-                 (replace-element (slot-value nd 'known-node-ids-clocks)
+           (setf (slot-value nd 'known-node-clocks)
+                 (replace-element (slot-value nd 'known-node-clocks)
                                   sender-id
                                   (cons sender-id timestamp)
                                   :key #'car)))
           ((not pair)
-           (push (cons sender-id timestamp) (slot-value nd 'known-node-ids-clocks))))))
+           (push (cons sender-id timestamp) (slot-value nd 'known-node-clocks))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -108,15 +108,15 @@
 ;;;
 
 ;; Local
-(defmethod handle-message :after ((nd node) msg-type (msg message))
-  (update-known-node-ids-clocks nd (sender-id msg) (timestamp msg)))
+(defmethod handle-message :after ((nd lamport-node) msg-type (msg message))
+  (update-known-node-clocks nd (sender-id msg) (timestamp msg)))
 
 ;; Local
-(defmethod handle-message ((nd node) (msg-type (eql :resource-request)) (msg message))
+(defmethod handle-message ((nd lamport-node) (msg-type (eql :resource-request)) (msg message))
   (let ((requester-id (sender-id msg)))
     (enqueue-request nd requester-id (timestamp msg))
     (send-message-as nd requester-id ":resource-request-ack")))
 
 ;; Local
-(defmethod handle-message ((nd node) (msg-type (eql :resource-release)) (msg message))
+(defmethod handle-message ((nd lamport-node) (msg-type (eql :resource-release)) (msg message))
   (request-queue-remove nd (sender-id nd)))
