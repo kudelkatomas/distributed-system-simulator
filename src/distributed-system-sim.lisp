@@ -4,7 +4,8 @@
 ;;;; Author: Tomáš Kudělka
 ;;;;
 ;;;; Description:
-;;;;   Base classes (Message, Node, Network)
+;;;;   Contains the fundamentals of the system,
+;;;;   namely the definitions of the base classes (Message, Node, Network).
 ;;;;
 ;;;;   Partial ordering of system events is established using
 ;;;;   Lamport's system of logical clocks: https://doi.org/10.1145/359545.359563
