@@ -96,6 +96,14 @@
           ((not pair)
            (push (cons sender-id timestamp) (slot-value nd 'known-node-clocks))))))
 
+;; Helper function
+(defun replace-element (list el new-el &key (key (lambda (x) x)))
+  (cond ((null list) '())
+        ((eql el (funcall key (car list)))
+         (cons new-el (replace-element (cdr list) el new-el :key key)))
+        (t (cons (car list)
+                 (replace-element (cdr list) el new-el :key key)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Message handling extension
