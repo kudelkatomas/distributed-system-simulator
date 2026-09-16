@@ -100,7 +100,7 @@
   nd)
 
 ;;;
-;;; Message queue
+;;; Message queue operations
 ;;;
 
 ;; Not local
@@ -126,12 +126,10 @@
       (handle-message nd (read-from-string (content msg)) msg)))
   nd)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Message handling
 ;;;
 ;;; Message types: :connection-request, :introduction
-;;;
 ;;; Broadcast: (= receiver-id *broadcast*)
 ;;;
 
