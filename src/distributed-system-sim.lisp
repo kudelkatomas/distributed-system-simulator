@@ -81,7 +81,8 @@
                      (leave (network nd) nd)
                    (bt:with-lock-held ((slot-value nd 'running-p-lock))
                      (setf (slot-value nd 'running-p) nil))))
-               :name (format nil "node-~a" (id nd))))))))
+               :name (format nil "node-~a" (id nd)))))))
+  nd)
 
 ;;;
 ;;; Lamport's logical clock
@@ -89,12 +90,14 @@
 
 ;; Local
 (defmethod increment-clock ((nd node))
-  (incf (slot-value nd 'clock)))
+  (incf (slot-value nd 'clock))
+  nd)
 
 ;; Local
 (defmethod update-clock ((nd node) timestamp)
   (setf (slot-value nd 'clock)
-        (1+ (max (clock nd) timestamp))))
+        (1+ (max (clock nd) timestamp)))
+  nd)
 
 ;;;
 ;;; Message queue
@@ -107,7 +110,8 @@
       (bt:with-lock-held ((slot-value nd 'message-queue-lock))
         (setf (slot-value nd 'message-queue)
               (append (slot-value nd 'message-queue)
-                      (list msg)))))))
+                      (list msg))))
+      t)))
 
 ;; Local
 (defmethod dequeue-message ((nd node))
@@ -119,8 +123,8 @@
 (defmethod process-next-message ((nd node))
   (let ((msg (dequeue-message nd)))
     (when msg
-      (let ((msg-type (read-from-string (content msg))))
-        (handle-message nd msg-type msg)))))
+      (handle-message nd (read-from-string (content msg)) msg)))
+  nd)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -137,11 +141,13 @@
 ;; Local
 (defmethod handle-message :before ((nd node) msg-type (msg message))
   (connect nd (sender-id msg))
-  (update-clock nd (timestamp msg)))
+  (update-clock nd (timestamp msg))
+  nd)
 
 ;; Local
 (defmethod handle-message ((nd node) (msg-type (eql :connection-request)) (msg message))
-  (send-message-as nd (sender-id msg) ":introduction"))
+  (send-message-as nd (sender-id msg) ":introduction")
+  nd)
 
 ;;;
 ;;; Helper methods
@@ -149,7 +155,8 @@
 
 ;; Local
 (defmethod connect ((nd node) sender-id)
-  (pushnew sender-id (slot-value nd 'known-node-ids)))
+  (pushnew sender-id (slot-value nd 'known-node-ids))
+  nd)
 
 ;; Local
 (defmethod send-message-as ((nd node) receiver-id content)
@@ -159,7 +166,8 @@
                                :sender-id (id nd)
                                :receiver-id receiver-id
                                :content content
-                               :timestamp (clock nd))))
+                               :timestamp (clock nd)))
+  nd)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -180,12 +188,14 @@
 
 (defmethod join ((nw network) (nd node))
   (bt:with-lock-held ((slot-value nw 'nodes-lock))
-    (push nd (slot-value nw 'nodes))))
+    (push nd (slot-value nw 'nodes)))
+  nw)
 
 (defmethod leave ((nw network) (nd node))
   (bt:with-lock-held ((slot-value nw 'nodes-lock))
     (setf (slot-value nw 'nodes)
-          (remove nd (slot-value nw 'nodes)))))
+          (remove nd (slot-value nw 'nodes))))
+  nw)
 
 (defmethod send-message ((nw network) (msg message))
   (labels ((broadcast-message ()
@@ -203,4 +213,5 @@
 
     (if (= (receiver-id msg) *broadcast*)
         (broadcast-message)
-      (direct-message))))
+      (direct-message)))
+  nw)
