@@ -143,6 +143,12 @@
   nd)
 
 ;; Local
+(defmethod handle-message ((nd node) msg-type (msg message))
+  "Fallback method for unhandled or notification-only messages."
+  (declare (ignore msg-type msg))
+  nd)
+
+;; Local
 (defmethod handle-message ((nd node) (msg-type (eql :connection-request)) (msg message))
   (send-message-as nd (sender-id msg) ":introduction")
   nd)
