@@ -127,6 +127,27 @@
   nd)
 
 ;;;
+;;; Helper methods
+;;;
+
+;; Local
+(defmethod connect ((nd node) sender-id)
+  (pushnew sender-id (slot-value nd 'known-node-ids))
+  nd)
+
+;; Local
+(defmethod send-message-as ((nd node) receiver-id content)
+  (increment-clock nd)
+  (send-message (network nd)
+                (make-instance 'message
+                               :sender-id (id nd)
+                               :receiver-id receiver-id
+                               :content content
+                               :timestamp (clock nd)))
+  nd)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Message handling
 ;;;
 ;;; Message types: :connection-request, :introduction
@@ -151,26 +172,6 @@
 ;; Local
 (defmethod handle-message ((nd node) (msg-type (eql :connection-request)) (msg message))
   (send-message-as nd (sender-id msg) ":introduction")
-  nd)
-
-;;;
-;;; Helper methods
-;;;
-
-;; Local
-(defmethod connect ((nd node) sender-id)
-  (pushnew sender-id (slot-value nd 'known-node-ids))
-  nd)
-
-;; Local
-(defmethod send-message-as ((nd node) receiver-id content)
-  (increment-clock nd)
-  (send-message (network nd)
-                (make-instance 'message
-                               :sender-id (id nd)
-                               :receiver-id receiver-id
-                               :content content
-                               :timestamp (clock nd)))
   nd)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
