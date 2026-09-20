@@ -4,63 +4,66 @@
 ;;;; Author: Tomáš Kudělka
 ;;;;
 ;;;; Description:
-;;;;   Demonstration/Examples
+;;;;   Couple of examples
 ;;;;
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Ukázka
-;;
-;; Funkce "run-program" a "run-2-programs" prepisují "network", "nodes" a "threads".
-;; Funkce "run-2-programs" přepisuje také "nodes-2".
-;;
-
-(defparameter *node-count* 20)
-
-(defparameter *program* nil)
-(defparameter *program-not-synced* nil)
-(defparameter *program-synced* nil)
-
-(defparameter *program-1* nil)
-(defparameter *program-2* nil)
-
-(defparameter *network* nil)
-
-(defparameter *nodes* nil)
-(defparameter *nodes-2* nil)
-
-(defparameter *threads* nil)
-
-;;
-;; Programy
-;;
+;;;
+;;; Example 1
+;;;
+;;; Nodes introduce themselves.
+;;; Nodes will most likely know each other at the end.
+;;;
 
 #|
-;; Jedna skupina
-(setf *program*
-      (node-program
-        (send-message-as this-node *broadcast* ":connection-request")
-        (loop repeat 100 do
-                (sleep 0.01)
-                (handle-message this-node))))
-
-
-;; Dve skupiny
-(setf *program-1*
-      (node-program
-        (send-message-as this-node *broadcast* ":connection-request")
-        (loop repeat 100 do
-                (sleep 0.01)
-                (handle-message this-node)))
-      
-      *program-2*
-      (node-program
-        (send-message-as this-node *broadcast* ":connection-request")
-        (loop repeat 100 do
-                (sleep 0.01)
-                (handle-message this-node))))
+(let* ((node-count 3)
+       (program (node-program
+                  (send-message-as this-node
+                                   *broadcast*
+                                   ":connection-request")
+                  (loop repeat node-count do
+                          (sleep 0.01)
+                          (process-next-message this-node))))
+       (nodes (start-n-nodes node-count 'node program)))
+  (wait-for-all nodes)
+  (mapcar #'known-node-ids nodes))
 |#
+
+;;;
+;;; Example 2
+;;;
+;;; Nodes introduce themselves, but are started in two groups.
+;;; Nodes will most likely NOT know each other at the end.
+;;;
+
+#|
+(let* ((group-node-count 2)
+       (pause-between-starts-duration 0.5)
+       (program (node-program
+                  (send-message-as this-node
+                                   *broadcast*
+                                   ":connection-request")
+                  (loop repeat (* 2 group-node-count) do
+                          (sleep 0.01)
+                          (process-next-message this-node))))
+       (groups (start-2n-nodes-in-two-groups group-node-count
+                                             'node
+                                             program
+                                             :sleep-duration pause-between-starts-duration))
+       (nodes (append (car groups) (cdr groups))))
+  (wait-for-all nodes)
+  (mapcar #'known-node-ids nodes))
+|#
+
+;;;
+;;; Example 3
+;;;
+;;; TO BE COMPLETED
+;;;
+;;; Mutual exclusion.
+;;; The resource is the ability to print to the output.
+;;;
+
+#| No synchronization |#
 
 ;; Vzajemne vylouceni
 
@@ -107,6 +110,9 @@
           *threads* (mapcar #'start *nodes*))
     (pprint *threads*)))
 
+
+
+
 ;;
 ;; Spuštění po dvou skupinach
 ;;
@@ -132,15 +138,6 @@
           (cdr (last *threads*))   (mapcar #'start *nodes-2*)
           (cdr (last *nodes*))     *nodes-2*)
     (format t "Both groups started.~%")))
-
-;;
-;; Pomocná funkce pro počkání než všechny uzly dopočítají
-;;
-
-(defun wait-for-all ()
-  (format t "Waiting for threads to finish computing...~%")
-  (mapcar #'bt:join-thread *threads*)
-  (format t "All threads finished computing.~%"))
 
 ;;
 ;; Pomocná funkce pro získání hodnot hodin uzlů (nepouziva lock)
