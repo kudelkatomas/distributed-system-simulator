@@ -38,9 +38,9 @@
 ;;; Node
 ;;;
 
-(defmacro node-program (&body body)
-  "THIS-NODE is bound to the node in BODY."
-  `(lambda (this-node)
+(defmacro node-program ((node-var) &body body)
+  "Creates a program for a node. NODE-VAR is bound to the node in BODY."
+  `(lambda (,node-var)
      ,@body))
 
 (defclass node ()
