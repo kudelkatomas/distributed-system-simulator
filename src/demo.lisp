@@ -16,7 +16,7 @@
 
 #|
 (let* ((node-count 3)
-       (program (node-program
+       (program (node-program (this-node)
                   (send-message-as this-node
                                    *broadcast*
                                    ":connection-request")
@@ -38,7 +38,7 @@
 #|
 (let* ((group-node-count 2)
        (pause-between-starts-duration 0.5)
-       (program (node-program
+       (program (node-program (this-node)
                   (send-message-as this-node
                                    *broadcast*
                                    ":connection-request")
