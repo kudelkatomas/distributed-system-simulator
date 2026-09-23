@@ -4,7 +4,9 @@
 ;;;; Author: Tomáš Kudělka
 ;;;;
 ;;;; Description:
-;;;;   Couple of examples
+;;;;   Examples demonstrating node introduction and mutual exclusion.
+;;;;
+;;;;   This file is not compiled or loaded by load.lisp.
 ;;;;
 
 ;;;
