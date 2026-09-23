@@ -17,8 +17,8 @@ A simple multithreaded distributed system simulator written in Common Lisp to de
 ## Project Structure
 
 * `distributed-system-sim.lisp`: Base simulator code defining nodes, networks, message passing, and thread lifecycles.
-* `mutex-lamport.lisp`: Adds the `lamport-node` class, clock handling, message queues, and lock acquisition/release methods.
-* `helpers.lisp`: Helper functions to initialize batches of nodes, join threads (`wait-for-all`), and control execution (`until`).
+* `mutex-lamport.lisp`: Adds the `lamport-node` class, clock handling, and lock acquisition/release methods.
+* `helpers.lisp`: Helper functions to initialize batches of nodes, and join threads (`wait-for-all`).
 * `load.lisp`: Small script to pull in dependencies and compile the core files in order.
 * `demo.lisp`: Step-by-step examples demonstrating basic communication, delayed start behavior, and resource contention with and without synchronization.
 
