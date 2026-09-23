@@ -33,7 +33,8 @@
          (group1 (start-n-nodes n node-class program :network network)))
     (when (> sleep-duration 0)
       (format t "Waiting for ~a seconds...~%" sleep-duration)
-      (sleep sleep-duration))
+      (sleep sleep-duration)
+      (format t "Waiting is over.~%"))
     (cons group1 (start-n-nodes n node-class program :network network :first-index (1+ n)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
