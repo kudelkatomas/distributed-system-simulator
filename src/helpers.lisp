@@ -4,12 +4,12 @@
 ;;;; Author: Tomáš Kudělka
 ;;;;
 ;;;; Description:
-;;;;   Helper functions
+;;;;   Helper functions and macros
 ;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Initialization
+;;; Node initialization
 ;;;
 
 (defun init-n-nodes (n node-class program &key (network (make-instance 'network)) (first-index 1))
@@ -38,7 +38,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; General helper functions
+;;; General helpers
 ;;;
 
 (defun compose (f g)
@@ -50,3 +50,13 @@
   (format t "Waiting for nodes to finish computing...~%")
   (mapcar (compose #'bt:join-thread #'thread) nodes)
   (format t "All nodes finished computing.~%"))
+
+;; Source: https://lispcookbook.github.io/cl-cookbook/process.html
+(defmacro until (condition &body body)
+  "Loops around until the condition becomes true."
+  (let ((block-name (gensym)))
+    `(block ,block-name
+       (loop
+          (if ,condition
+              (return-from ,block-name nil)
+            (progn ,@body))))))
