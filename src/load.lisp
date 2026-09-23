@@ -14,7 +14,7 @@
 (asdf:load-system :bordeaux-threads)
 
 (defsystem distributed-system-sim ()
-  :members ("distributed-system-sim" "mutex-lamport")
+  :members ("distributed-system-sim" "mutex-lamport" "helpers")
   :rules ((:in-order-to :compile :all (:requires (:load :previous)))))
 
 (compile-system 'distributed-system-sim :load t)
